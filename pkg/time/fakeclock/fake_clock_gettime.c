@@ -49,6 +49,22 @@ inline int real_clock_gettime(clockid_t clk_id, struct timespec *tp) {
 
     return x0;
 }
+#elif defined(__loongarch64)
+inline int real_clock_gettime(clockid_t clk_id, struct timespec *tp) {
+    register int ret __asm__("$r4");
+    register clockid_t r4 __asm__ ("$r4") = clk_id;
+    register struct timespec *r5 __asm__ ("$r5") = tp;
+    register uint64_t r11 __asm__ ("$r11") = __NR_clock_gettime; /* syscall number */
+
+    __asm__ __volatile__ (
+        "syscall 0;"
+        : "+r" (ret)
+        : "r"(r4), "r"(r5), "r"(r11)
+        : "memory"
+    );
+
+    return ret;
+}
 #endif
 
 int fake_clock_gettime(clockid_t clk_id, struct timespec *tp) {

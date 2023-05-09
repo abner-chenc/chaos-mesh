@@ -85,9 +85,10 @@ func LoadFakeImageFromEmbedFs(filename string, symbolName string, logger logr.Lo
 
 				sym := syms[symNo-1]
 				byteorder := elfFile.ByteOrder
-				if elfFile.Machine == elf.EM_X86_64 || elfFile.Machine == elf.EM_AARCH64 {
+				switch elfFile.Machine {
+				case elf.EM_X86_64, elf.EM_AARCH64, elf.EM_LOONGARCH:
 					AssetLD(rela, imageOffset, &imageContent, sym, byteorder)
-				} else {
+				default:
 					return nil, errors.Errorf("unsupported architecture")
 				}
 			}

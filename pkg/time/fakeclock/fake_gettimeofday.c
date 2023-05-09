@@ -52,6 +52,22 @@ inline int real_gettimeofday(struct timeval *tv, struct timezone *tz)
 
     return w0;
 }
+#elif defined(__loongarch64)
+inline int real_gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+    register int ret __asm__("$r4");
+    register struct timeval *r4 __asm__("$r4") = tv;
+    register struct timezone *r5 __asm__("$r5") = tz;
+    register uint64_t r11 __asm__("$r11") = __NR_gettimeofday; /* syscall number */
+
+    __asm__ __volatile__(
+        "syscall 0;"
+        : "+r"(ret)
+        : "r"(r4), "r"(r5), "r"(r11)
+        : "memory");
+
+    return ret;
+}
 #endif
 
 int fake_gettimeofday(struct timeval *tv, struct timezone *tz)
